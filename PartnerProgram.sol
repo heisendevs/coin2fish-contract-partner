@@ -11,7 +11,7 @@ pragma solidity 0.8.16;
  */
 contract PartnerProgram is Context {
     using SafeMath for uint256;
-    uint256 partnerProgramTax = 2;
+    uint256 partnerProgramTax = 5;
     address private partnerProgramOwner;
 
     struct Project {
