@@ -16,7 +16,6 @@ contract PartnerProgram is Context {
 
     struct Project {
         address contractAddress;
-        address contractOwner;
         address payable paymentsWallet;
         uint256 partnerCommission;
         uint256 partnerPremiumCommission;
@@ -47,6 +46,8 @@ contract PartnerProgram is Context {
     event NewPartner(string name, string code);
     event UpdatePartner(string name, string code);
     event NewProject(address contractAddress, string _coinName, string _coinSymbol, string website);
+    event UpdateProject(address contractAddress, string _coinName, string _coinSymbol, string website);
+
     event PartnerProgramBUY(address indexed sender, address indexed _contract, string indexed _code, uint amount);
 
 
@@ -137,7 +138,6 @@ contract PartnerProgram is Context {
         require(_token.owner() == _msgSender(), "New Project: caller is not the owner");
         projects[_contractAddress] = Project({
         contractAddress : _contractAddress,
-        contractOwner: msgSender(),
         paymentsWallet : _paymentsWallet,
         partnerCommission : _partnerCommission,
         partnerPremiumCommission : _partnerPremiumCommission,
@@ -155,7 +155,6 @@ contract PartnerProgram is Context {
     function updateProject (
         address _contractAddress,
         address payable _paymentsWallet,
-        address payable _paymentsWallet,
         uint256 _partnerCommission,
         uint256 _partnerPremiumCommission,
         string memory _coinName,
@@ -168,7 +167,6 @@ contract PartnerProgram is Context {
         require(msg.sender == tx.origin, "Update Project: projects not allowed here");
         require(_partnerCommission > 0, "Update Project: commission must be greater than zero");
         require(_partnerCommission <= 30, "New Project: partner commission must keep 30% or less");
-
         IERC20 _token = IERC20(_contractAddress);
         require(_token.owner() == _msgSender(), "New Project: caller is not the owner");
         projects[_contractAddress] = Project({
@@ -185,7 +183,7 @@ contract PartnerProgram is Context {
         discord : _discord,
         isValue : true
         });
-        emit updateProject(_contractAddress, _coinName, _coinSymbol, _website);
+        emit UpdateProject(_contractAddress, _coinName, _coinSymbol, _website);
     }
 
     function joinAsPartner(
@@ -216,28 +214,8 @@ contract PartnerProgram is Context {
         address payable _managerAddress,
         uint256 _taxFeePartner,
         uint256 _taxFeeManager) external {
-        require(!partners[_code]._partnerAddress == _msgSender() , "Partners: only Partner can change the data");
-        require(!partners[_code].isValue, "Partners: code already exists");
-        require(_taxFeePartner + _taxFeeManager == 100, "The sum of the taxes must be 100");
-        partners[_code] = Partner({
-        name : _name,
-        code : _code,
-        partnerAddress : _partnerAddress,
-        managerAddress : _managerAddress,
-        taxFeePartner : _taxFeePartner,
-        taxFeeManager : _taxFeeManager,
-        isValue : true
-        });
-        emit UpdatePartner(_name, _code);
-    }
-    function updatePartner(
-        string memory _name,
-        string memory _code,
-        address payable  _partnerAddress,
-        address payable _managerAddress,
-        uint256 _taxFeePartner,
-        uint256 _taxFeeManager) external {
-        require(!partners[_code]._partnerAddress == _msgSender() , "Partners: only Partner can change the data");
+        Partner storage _partner = partners[_code];
+        require(_partner.partnerAddress == _msgSender() , "Partners: only Partner can change the data");
         require(!partners[_code].isValue, "Partners: code already exists");
         require(_taxFeePartner + _taxFeeManager == 100, "The sum of the taxes must be 100");
         partners[_code] = Partner({
