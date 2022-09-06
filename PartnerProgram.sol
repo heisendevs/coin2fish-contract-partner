@@ -134,6 +134,7 @@ contract PartnerProgram is Context {
         require(msg.sender == tx.origin, "New Project: contracts not allowed here");
         require(_partnerCommission > 0, "New Project: commission must be greater than zero");
         require(_partnerCommission <= 30, "New Project: partner commission must keep 30% or less");
+        require(!projects[_contractAddress].isValue, "New Project: project already exists");
         IERC20 _token = IERC20(_contractAddress);
         require(_token.owner() == _msgSender(), "New Project: caller is not the owner");
         projects[_contractAddress] = Project({
@@ -166,7 +167,7 @@ contract PartnerProgram is Context {
         require(msg.sender == tx.origin, "Update Project: contracts not allowed here");
         require(msg.sender == tx.origin, "Update Project: projects not allowed here");
         require(_partnerCommission > 0, "Update Project: commission must be greater than zero");
-        require(_partnerCommission <= 30, "New Project: partner commission must keep 30% or less");
+        require(_partnerCommission <= 30, "Update Project: partner commission must keep 30% or less");
         IERC20 _token = IERC20(_contractAddress);
         require(_token.owner() == _msgSender(), "New Project: caller is not the owner");
         projects[_contractAddress] = Project({
@@ -216,7 +217,6 @@ contract PartnerProgram is Context {
         uint256 _taxFeeManager) external {
         Partner storage _partner = partners[_code];
         require(_partner.partnerAddress == _msgSender() , "Partners: only Partner can change the data");
-        require(!partners[_code].isValue, "Partners: code already exists");
         require(_taxFeePartner + _taxFeeManager == 100, "The sum of the taxes must be 100");
         partners[_code] = Partner({
         name : _name,
